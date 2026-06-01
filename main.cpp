@@ -132,10 +132,8 @@ int main() {
 
     GLuint timeQueries[2];
     glGenQueries(2, timeQueries);
-    int i = 0;
 
-    while (/*!glfwWindowShouldClose(window)*/ i < 1000) {
-        i++;
+    while (!glfwWindowShouldClose(window)) {
         // SIMULATION PASS
         camera.inputs(window);
         double currentTime = glfwGetTime();

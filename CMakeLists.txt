@@ -23,6 +23,8 @@ add_executable(3D_Game_of_Life main.cpp
         texture3d.h
 )
 
+target_compile_definitions(3D_Game_of_Life PRIVATE GLM_ENABLE_EXPERIMENTAL)
+
 # 3. Link the libraries to your project
 target_link_libraries(3D_Game_of_Life
         PUBLIC
