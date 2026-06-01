@@ -1,0 +1,103 @@
+#version 450 core
+// define the size of a workgroup
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+// textures
+layout (binding = 0) uniform usampler3D inputGrid;
+layout (binding = 1, r8ui) uniform writeonly  uimage3D outputGrid;
+
+// survive & birth rules that are stored as 2 unsigned integers
+uniform uint surviveRules;
+uniform uint birthRules;
+
+shared uint localGrid[1000]; // load 10x10x10 workgroup + halo
+
+shared uint blockHasLife;
+
+void main() {
+    if (gl_LocalInvocationIndex == 0) {
+        blockHasLife = 0u;
+    }
+
+    memoryBarrierShared();
+    barrier();
+
+    ivec3 dim = textureSize(inputGrid, 0);
+
+    for (uint i = gl_LocalInvocationIndex; i < 1000u; i += 512u) {
+        // convert 1D shared memory index (0-999) to a 3D local coordinate (0-9)
+        int lx = int(i % 10u);
+        int ly = int((i / 10u) % 10u);
+        int lz = int(i / 100u);
+
+        // find the absolute top-left-front corner of this workgroup's halo
+        ivec3 groupBase = ivec3(gl_WorkGroupID * uvec3(8)) - ivec3(1);
+
+        // map to global texture coordinates with Toroidal Wrapping
+        ivec3 readPos = (groupBase + ivec3(lx, ly, lz) + dim) % dim;
+
+        uint val = texelFetch(inputGrid, readPos, 0).r;
+        localGrid[i] = val;
+
+        if ((val & 1u) == 1u) {
+            atomicOr(blockHasLife, 1u);
+        }
+    }
+
+    memoryBarrierShared();
+    barrier();
+
+    // get the 3D coords for which this thread is rsponsible for
+    ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
+
+    // check if we are outside the texture bounds
+    if (pos.x >= dim.x || pos.y >= dim.y || pos.z >= dim.z) {
+        return;
+    }
+
+    if (blockHasLife == 0u) {
+        imageStore(outputGrid, pos, uvec4(0u, 0, 0, 0));
+        return;
+    }
+
+    ivec3 localPos = ivec3(gl_LocalInvocationID) + ivec3(1);
+
+    uint aliveNeighbors = 0;
+
+    // pass through the 26 neighbors
+    for (int z = -1; z <= 1; z++) {
+        for (int y = -1; y <= 1; y++) {
+            for (int x = -1; x <= 1; x++) {
+                if (x == 0 && y == 0 && z == 0) continue; // skip itself
+
+                // calculate the 3D coords of the neighbor
+                ivec3 neighborPos = localPos + ivec3(x, y, z);
+
+                uint idx = neighborPos.x + (neighborPos.y * 10u) + (neighborPos.z * 100u);
+
+                aliveNeighbors += (localGrid[idx] & 1u);
+            }
+        }
+    }
+
+    uint centerIdx = localPos.x + (localPos.y * 10u) + (localPos.z * 100u);
+    uint currentState = localGrid[centerIdx] & 1u; // get the state of this cell
+
+    // apply the rules
+    uint nextState = 0;
+    if (currentState == 1u) {
+        if ((surviveRules & (1u << aliveNeighbors)) != 0u) {
+            nextState = 1u;
+        }
+    } else {
+        if ((birthRules & (1u << aliveNeighbors)) != 0u) {
+            nextState = 1u;
+        }
+    }
+
+    // pack the current cell
+    uint outputData = (aliveNeighbors << 1) | nextState;
+
+    // write to the writeTexture
+    imageStore(outputGrid, pos, uvec4(outputData, 0, 0, 0));
+}

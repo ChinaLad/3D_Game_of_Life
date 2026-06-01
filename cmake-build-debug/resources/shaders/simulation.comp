@@ -1,0 +1,65 @@
+#version 450 core
+// define the size of a workgroup
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
+
+// textures
+layout (binding = 0) uniform usampler3D inputGrid;
+layout (binding = 1, r8ui) uniform writeonly  uimage3D outputGrid;
+
+// survive & birth rules that are stored as 2 unsigned integers
+uniform uint surviveRules;
+uniform uint birthRules;
+
+void main() {
+    // get the 3D coords for which this thread is rsponsible for
+    ivec3 pos = ivec3(gl_GlobalInvocationID.xyz);
+
+    ivec3 dim = textureSize(inputGrid, 0);
+
+    // check if we are outside the texture bounds
+    if (pos.x >= dim.x || pos.y >= dim.y || pos.z >= dim.z) {
+        return;
+    }
+
+    uint aliveNeighbors = 0;
+
+    // pass through the 26 neighbors
+    for (int z = -1; z <= 1; z++) {
+        for (int y = -1; y <= 1; y++) {
+            for (int x = -1; x <= 1; x++) {
+                if (x == 0 && y == 0 && z == 0) continue; // skip itself
+
+                // calculate the 3D coords of the neighbor
+                ivec3 neighborPos = pos + ivec3(x, y, z);
+
+                // find neighbor position + wrap around the edges of the grid
+                neighborPos = (neighborPos + dim) % dim;
+
+                // read cell byte and get the lowest bit which indicates if the cell is dead or alive
+                uint neighborData = texelFetch(inputGrid, neighborPos, 0).r;
+                aliveNeighbors += (neighborData & 1u);
+            }
+        }
+    }
+
+    uint currentData = texelFetch(inputGrid, pos, 0).r;
+    uint currentState = currentData & 1u; // get the state of this cell
+
+    // apply the rules
+    uint nextState = 0;
+    if (currentState == 1u) {
+        if ((surviveRules & (1u << aliveNeighbors)) != 0u) {
+            nextState = 1u;
+        }
+    } else {
+        if ((birthRules & (1u << aliveNeighbors)) != 0u) {
+            nextState = 1u;
+        }
+    }
+
+    // pack the current cell
+    uint outputData = (aliveNeighbors << 1) | nextState;
+
+    // write to the writeTexture
+    imageStore(outputGrid, pos, uvec4(outputData, 0, 0, 0));
+}

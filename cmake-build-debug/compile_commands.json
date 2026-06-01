@@ -1,0 +1,20 @@
+[
+{
+  "directory": "/media/gamedrive/Programing/3D_Game_of_Life/cmake-build-debug",
+  "command": "/usr/bin/g++-15 -O3  -DGLM_ENABLE_EXPERIMENTAL -g -std=gnu++17 -fdiagnostics-color=always -o CMakeFiles/3D_Game_of_Life.dir/main.cpp.o -c /media/gamedrive/Programing/3D_Game_of_Life/main.cpp",
+  "file": "/media/gamedrive/Programing/3D_Game_of_Life/main.cpp",
+  "output": "/media/gamedrive/Programing/3D_Game_of_Life/cmake-build-debug/CMakeFiles/3D_Game_of_Life.dir/main.cpp.o"
+},
+{
+  "directory": "/media/gamedrive/Programing/3D_Game_of_Life/cmake-build-debug",
+  "command": "/usr/bin/g++-15 -x c++ -O3  -DGLM_ENABLE_EXPERIMENTAL -g -std=gnu++17 -fdiagnostics-color=always -o CMakeFiles/3D_Game_of_Life.dir/gl.c.o -c /media/gamedrive/Programing/3D_Game_of_Life/gl.c",
+  "file": "/media/gamedrive/Programing/3D_Game_of_Life/gl.c",
+  "output": "/media/gamedrive/Programing/3D_Game_of_Life/cmake-build-debug/CMakeFiles/3D_Game_of_Life.dir/gl.c.o"
+},
+{
+  "directory": "/media/gamedrive/Programing/3D_Game_of_Life/cmake-build-debug",
+  "command": "/usr/bin/g++-15 -O3  -DGLM_ENABLE_EXPERIMENTAL -g -std=gnu++17 -fdiagnostics-color=always -o CMakeFiles/3D_Game_of_Life.dir/stb_image.cpp.o -c /media/gamedrive/Programing/3D_Game_of_Life/stb_image.cpp",
+  "file": "/media/gamedrive/Programing/3D_Game_of_Life/stb_image.cpp",
+  "output": "/media/gamedrive/Programing/3D_Game_of_Life/cmake-build-debug/CMakeFiles/3D_Game_of_Life.dir/stb_image.cpp.o"
+}
+]

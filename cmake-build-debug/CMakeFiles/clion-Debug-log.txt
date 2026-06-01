@@ -1,0 +1,4 @@
+/snap/clion/455/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/455/bin/ninja/linux/x64/ninja -DCMAKE_C_COMPILER=/usr/bin/gcc-15 -DCMAKE_CXX_COMPILER=/usr/bin/g++-15 -G Ninja -S /media/gamedrive/Programing/3D_Game_of_Life -B /media/gamedrive/Programing/3D_Game_of_Life/cmake-build-debug
+-- Configuring done (0.0s)
+-- Generating done (0.0s)
+-- Build files have been written to: /media/gamedrive/Programing/3D_Game_of_Life/cmake-build-debug
